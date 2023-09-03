@@ -14,14 +14,16 @@ class Address extends Model
      * @var array
      */
     use HasFactory;
+    public $timestamps = false;
     protected $fillable = [
         'postal_code',
+        'street_number',
+        'complement',
         'state',
         'city',
         'sublocality',
         'street',
-        'street_number',
-        'complement'
+        'foreign_id'
     ];
 
     /**
@@ -32,4 +34,8 @@ class Address extends Model
     protected $hidden = [
         'id'
     ];
+    public function store()
+    {
+        return $this->belongsTo(Store::class, 'foreing_id', 'id');
+    }
 }

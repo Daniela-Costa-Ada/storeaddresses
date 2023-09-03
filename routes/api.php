@@ -23,3 +23,5 @@ Route::apiResource('store', StoreController::class)->names('stores');
 //Route::get('cep', StoreController::class, 'searchCep');
 Route::get('cepla', [StoreController::class, 'CepLa']);
 Route::get('viacep', [StoreController::class, 'viaCep']);
+Route::post('storeaddress', [StoreController::class, 'storeAddress']);
+
