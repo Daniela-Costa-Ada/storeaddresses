@@ -6,8 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Address;
 use App\Models\Store;
 use GuzzleHttp\Client;
-use GuzzleHttp\Psr7\Request as Psr7Request;
-use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Http\Request;
 
 class StoreController extends Controller
@@ -18,8 +16,7 @@ class StoreController extends Controller
     public function index()
     {
         $stores = Store::all();
-        return response()->json($stores);
-        //FUNCIONA
+        return response()->json($stores);      
     }
 
     /**
@@ -36,7 +33,6 @@ class StoreController extends Controller
         $store->save();
         $this->storeAddress($request, $store->id);
         echo "dados salvos com sucesso";
-        //FUNCIONA
     }
 
     public function storeAddress(Request $request, $id)
@@ -53,7 +49,6 @@ class StoreController extends Controller
         $address->street = $dataAddress->logradouro;
         $address->foreign_id = $id;
         $address->save();
-        //FUNCIONA
     }
 
     /**
@@ -67,10 +62,17 @@ class StoreController extends Controller
         }
         $address = $store->address()->first();
         if ($address) {
-            $data += ["postal_code" => $address->postal_code];
+            $data +=["postal_code_masked" => $this->cepMask('#####-###', $address->postal_code)];
+            $data +=["street_number" => $address->street_number];
+            $data +=["state" => $address->state];
+            $data +=["city" => $address->city];
+            $data +=["sublocality" => $address->sublocality];
+            $data +=["street" => $address->street];
+            $data +=["complement" => $address->complement];           
+            
             return $data;
         }
-    } //FUNCIONA
+    }
 
     /**
      * Update the specified resource in storage.
@@ -94,19 +96,31 @@ class StoreController extends Controller
     {
         $client = new Client();
         $request = $client->get("https://viacep.com.br/ws/{$cep}/json/");
-        $response = $request->getBody()->getContents();       
+        $response = $request->getBody()->getContents();        
+        if(!$response){
+            $this->viaCep($cep);
+        }
         return $response;
     }
 
     public function viaCep(string $cep)
     {
-
         $client = new Client();
         $request = $client->get("https://viacep.com.br/ws/{$cep}/json/");
         $response = $request->getBody()->getContents();
         $value = json_decode($response);
         if ($value->erro) {
             echo "Cep nao encontrado";
-        }else return $value;
+        } else return $value;
+    }
+
+    public function cepMask($mask, $cep)
+    {
+        $cep = str_replace(" ", "", $cep);
+
+        for ($i = 0; $i < strlen($cep); $i++) {
+            $mask[strpos($mask, "#")] = $cep[$i];
+        }
+        return $mask;
     }
 }

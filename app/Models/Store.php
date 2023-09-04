@@ -27,7 +27,8 @@ class Store extends Model
     protected $hidden = [
         'id'
     ];
-    public function address() {
+    public function address()
+    {
         return $this->hasOne(Address::class, 'foreign_id', 'id');
     }
 }
